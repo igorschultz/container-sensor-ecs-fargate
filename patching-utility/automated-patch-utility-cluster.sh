@@ -28,6 +28,12 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# Check if docker daemon is running
+if ! docker info &> /dev/null; then
+    echo "Error: Docker daemon is not running"
+    exit 1
+fi
+
 # Function to handle errors
 handle_error() {
     local error_message="$1"

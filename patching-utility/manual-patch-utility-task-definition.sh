@@ -34,6 +34,12 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# Check if docker daemon is running
+if ! docker info &> /dev/null; then
+    echo "Error: Docker daemon is not running"
+    exit 1
+fi
+
 # Function to remove managed parameters from original task definition
 remove_keys() {
     local json_file="$1"
