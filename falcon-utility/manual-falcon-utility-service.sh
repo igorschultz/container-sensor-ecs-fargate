@@ -233,7 +233,7 @@ echo ""
           -v ${HOME}/.docker/config.json:/root/.docker/config.json \
           -v /var/run/docker.sock:/var/run/docker.sock \
           --rm "$AWS_REPO":"$FALCON_IMAGE_TAG" \
-          falconutil patch-image ecsfargate \
+          falconutil patch-image \
           --cid $FALCON_CID \
           --falcon-image-uri "$AWS_REPO":"$FALCON_IMAGE_TAG" \
           --source-image-uri "$IMAGE_REPO":"$IMAGE_TAG" \
@@ -245,7 +245,7 @@ echo ""
           -v ${HOME}/.docker/config.json:/root/.docker/config.json \
           -v /var/run/docker.sock:/var/run/docker.sock \
           --rm "$AWS_REPO":"$FALCON_IMAGE_TAG" \
-          falconutil patch-image ecsfargate \
+          falconutil patch-image \
           --cid $FALCON_CID \
           --falcon-image-uri "$AWS_REPO":"$FALCON_IMAGE_TAG" \
           --source-image-uri "$IMAGE_REPO":"$IMAGE_TAG" \
