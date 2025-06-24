@@ -113,7 +113,7 @@ echo ""
 
 
     # Get list of Fargate services in the cluster
-    services=$(aws ecs list-services --cluster "$cluster_name" --region "$region" --output json | jq -r '.serviceArns[]')
+    services=$(aws ecs list-services --cluster "$cluster_name" --region "$region" --output json | jq -r '.serviceArns | sort[]')
     
     # Check if any services were found
     if [ -z "$services" ]; then
@@ -137,7 +137,7 @@ echo ""
     if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
 
         # List all task definition families
-        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName' --output text)
+        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
 
 
         # Get the latest version of each task definition family

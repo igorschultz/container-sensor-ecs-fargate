@@ -94,7 +94,7 @@ region="$region"
 {
 
     # List all task definition families
-    task_families=$(aws ecs list-task-definition-families --region $region --status ACTIVE --output text --query 'families[*]')
+    task_families=$(aws ecs list-task-definition-families --region $region --status ACTIVE --output text --query 'families[*]| sort(@)')
 
     # Get the latest version of each task definition family
     for family in $task_families; do
@@ -158,7 +158,7 @@ region="$region"
     if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
 
         # List all task definition families
-        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName' --output text)
+        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
 
 
         # Get the latest version of each task definition family
