@@ -7,6 +7,7 @@ usage() {
     echo "  -c: AWS ECS cluster name (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
     echo "  -s: CrowdStrike falcon client secret (required)"
+    echo "  -p: AWS ECS Service/Task Architecture. i.e aarch64 or x86_64 (required)"
     exit 1
 }
 
@@ -82,12 +83,13 @@ trap 'handle_error "An error occurred at line $LINENO"' ERR
 
 
 # Parse command line arguments
-while getopts ":r:c:u:s:" opt; do
+while getopts ":r:c:u:s:p:" opt; do
     case $opt in
         r) region="$OPTARG" ;;
         c) cluster_name="$OPTARG" ;;
         u) falcon_client_id="$OPTARG" ;;
         s) falcon_client_secret="$OPTARG" ;;
+        p) app_arch="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2; usage ;;
     esac
 done
@@ -95,6 +97,7 @@ done
 # Initialize variables
 region="$region"
 cluster_name="$cluster_name"
+app_arch="$app_arch"
 
 echo ""
 echo "Listing Fargate services in cluster: $cluster_name"
@@ -159,7 +162,7 @@ echo ""
     export FALCON_CLIENT_ID=$falcon_client_id
     export FALCON_CLIENT_SECRET=$falcon_client_secret
     export FALCON_CID=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -t falcon-container --get-cid)
-    export LATESTSENSOR=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -t falcon-container | tail -1)
+    export LATESTSENSOR=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -p $app_arch -t falcon-container | tail -1)
     export FALCON_IMAGE_TAG=$(echo $LATESTSENSOR | cut -d':' -f 2)
     export ACCOUNT_ID=$(aws ecs describe-clusters --clusters $cluster_name --region $region --query 'clusters[0].clusterArn' --output text | awk -F: '{print $5}')
     export JSON_STRING=$(cat $cleaned_file)

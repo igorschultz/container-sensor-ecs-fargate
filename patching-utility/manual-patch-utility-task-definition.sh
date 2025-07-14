@@ -4,8 +4,10 @@
 usage() {
     echo "Usage: $0 -r <region> -u <falcon-client-id> -s <falcon-client-secret>"
     echo "  -r: AWS region (required)"
+    echo "  -c: AWS ECS cluster name (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
     echo "  -s: CrowdStrike falcon client secret (required)"
+    echo "  -p: AWS ECS Service/Task Architecture. i.e aarch64 or x86_64 (required)"
     exit 1
 }
 
@@ -78,17 +80,19 @@ set -e
 trap 'handle_error "An error occurred at line $LINENO"' ERR
 
 # Parse command line arguments
-while getopts ":r:u:s:" opt; do
+while getopts ":r:u:s:p:" opt; do
     case $opt in
         r) region="$OPTARG" ;;
         u) falcon_client_id="$OPTARG" ;;
         s) falcon_client_secret="$OPTARG" ;;
+        p) app_arch="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2; usage ;;
     esac
 done
 
 # Initialize variables
 region="$region"
+app_arch="$app_arch"
 
 # Main code
 {
@@ -98,7 +102,7 @@ region="$region"
 
     # Get the latest version of each task definition family
     for family in $task_families; do
-        latest=$(aws ecs describe-task-definition --task-definition "$family" --region $region --query 'taskDefinition.taskDefinitionArn' --output text)
+        latest=$(aws ecs describe-task-definition --task-definition "$family" --region $region --query 'taskDefinition.taskDefinitionArn| sort(@)' --output text)
         latest_task_definitions+=("$latest")
     done
 
@@ -130,7 +134,7 @@ region="$region"
     ORIGINAL_TASK_DEFINITION=$task_def_name/${task_def_name}.json
 
     # Get task definition details and save to JSON file
-    aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition' --output json > "$ORIGINAL_TASK_DEFINITION"
+    aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition ' --output json > "$ORIGINAL_TASK_DEFINITION"
 
     echo "Original task definition exported to $ORIGINAL_TASK_DEFINITION"
 
@@ -147,7 +151,7 @@ region="$region"
     export FALCON_CLIENT_ID=$falcon_client_id
     export FALCON_CLIENT_SECRET=$falcon_client_secret
     export FALCON_CID=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -t falcon-container --get-cid)
-    export LATESTSENSOR=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -t falcon-container | tail -1)
+    export LATESTSENSOR=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -p $app_arch -t falcon-container | tail -1)
     export FALCON_IMAGE_TAG=$(echo $LATESTSENSOR | cut -d':' -f 2)
     export ACCOUNT_ID=$(aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition.taskDefinitionArn' --output text | awk -F: '{print $5}')
     export JSON_STRING=$(cat $cleaned_file)

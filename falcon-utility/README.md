@@ -51,23 +51,25 @@ The Falcon Container has 2 components:
 
 ```
 
-./manual-patch-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region>
+./manual-patch-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region> -p <platform>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
     -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
     -r, --region <AWS_REGION>                      Falcon Cloud Region [us-east-1, us-west-2, sa-east-1]
+    -p, --platform <SENSOR_PLATFORM>               Specify sensor platform to retrieve, e.g., x86_64, aarch64
 ```
 
 ### manual-falcon-utility-service
 
 ```
 
-./manual-falcon-utility-service.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name>
+./manual-falcon-utility-service.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name> -p <platform>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
     -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
     -r, --region <AWS_REGION>                      AWS Cloud Region [us-east-1, us-west-2, sa-east-1]
     -c, --cluster <CLUSTER_NAME>                   ECS Cluster name
+    -p, --platform <SENSOR_PLATFORM>               Specify sensor platform to retrieve, e.g., x86_64, aarch64
 ```
