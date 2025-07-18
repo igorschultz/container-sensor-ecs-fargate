@@ -62,13 +62,13 @@ remove_keys() {
 
 # Function to check if a repository exists
 check_repository_exists() {
-    aws ecr describe-repositories --repository-names "$repository_name" --region $region >/dev/null 2>&1
+    aws ecr describe-repositories --repository-names "$repo_name" --region $region >/dev/null 2>&1
     return $?
 }
 
-# Function to create a repository
+# Function to create a repository for falcon container sensor
 create_repository() {
-    aws ecr create-repository --repository-name "$repository_name" --region $region >/dev/null 2>&1
+    aws ecr create-repository --repository-name "$repo_name" --region $region >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         echo "Repository $1 created successfully."
     else
