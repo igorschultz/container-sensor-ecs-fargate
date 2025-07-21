@@ -51,7 +51,7 @@ The Falcon Container has 2 components:
 
 ```
 
-./manual-patch-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region> -p <platform>
+./manual-falcon-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region> -p <platform>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
