@@ -2,7 +2,7 @@
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 -r <region> -u <falcon-client-id> -s <falcon-client-secret> -p <app_arch>"
+    echo "Usage: $0 -c <cluster-name> -r <region> -u <falcon-client-id> -s <falcon-client-secret> -p <app_arch>"
     echo "  -r: AWS region (required)"
     echo "  -c: AWS ECS cluster name (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
