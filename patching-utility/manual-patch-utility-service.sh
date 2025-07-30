@@ -170,45 +170,52 @@ echo ""
     echo ""
     read -p "Do you have an existing AWS ECR repository for Falcon Container Sensor (yes/no)? " has_repo
 
-    if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
-        
-        # List all task definition families
-        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
+    while true; do 
+        if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
+
+            # List all task definition families
+            ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
 
 
-        # Get the latest version of each task definition family
-        for repo in $ecr_repositories_list; do
-            ecr_repositories+=("$repo")
-        done
+            # Get the latest version of each task definition family
+            for repo in $ecr_repositories_list; do
+                ecr_repositories+=("$repo")
+            done
 
-        # Display task definitions with numbers, one per line
-        echo "Available ECR registries:"
-        for i in "${!ecr_repositories[@]}"; do
-            echo "$((i+1)). ${ecr_repositories[$i]}"
-        done
-        echo ""
-        # Ask user to select falcon container sensor ECR repo
-        read -p "Enter the number of the ECR repository used for Falcon Container Sensor: " selection
+            # Display task definitions with numbers, one per line
+            echo "Available ECR registries:"
+            for i in "${!ecr_repositories[@]}"; do
+                echo "$((i+1)). ${ecr_repositories[$i]}"
+            done
+            echo ""
+            # Ask user to select falcon container sensor ECR repo
+            read -p "Enter the number of the ECR repository used for Falcon Container Sensor: " selection
 
-        # Validate user input
-        if ! [[ "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt "${#ecr_repositories[@]}" ]; then
-            echo "Invalid selection. Exiting."
-            exit 1
-        fi
+            # Validate user input
+            if ! [[ "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -lt 1 ] || [ "$selection" -gt "${#ecr_repositories[@]}" ]; then
+                echo "Invalid selection. Exiting."
+                exit 1
+            fi
 
-        # Get selected task definition
-        repo_name="${ecr_repositories[$((selection-1))]}"
+            # Get selected task definition
+            repo_name="${ecr_repositories[$((selection-1))]}" 
+            break 
 
-    else
-        repo_name="falcon-sensor/falcon-container"
-        echo "Checking if repository $repo_name exists..."
-        if check_repository_exists "$repo_name"; then
-            echo "Repository $repo_name already exists."
+        elif [ "$has_repo" = "no" ] || [ "$has_repo" = "n" ]|| [ "$has_repo" = "No" ] || [ "$has_repo" = "N" ]; then
+            repo_name="crowdstrike"
+            echo "Checking if repository $repo_name exists..."
+            if check_repository_exists "$repo_name"; then
+                echo "Repository $repo_name already exists."
+            else
+                echo "Creating repository $repo_name..."
+                create_repository "$repo_name"
+            fi
+            break
         else
-            echo "Creating repository $repo_name..."
-            create_repository "$repo_name"
+            echo "Invalid input. Please answer 'yes' or 'no'."
+            read -p "Do you have an existing AWS ECR repository for Falcon Container Sensor (yes/no)? " has_repo
         fi
-    fi
+    done
 
     # Set the new image repo as a variable
     export AWS_REPO=$(aws ecr describe-repositories --repository-name $repo_name --region $region | jq -r  '.repositories[].repositoryUri')

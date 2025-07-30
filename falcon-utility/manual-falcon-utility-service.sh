@@ -172,10 +172,11 @@ echo ""
   echo ""
   read -p "Do you have an existing AWS ECR repository for Falcon Container Sensor (yes/no)? " has_repo
 
-  if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
+  while true; do 
+    if [ "$has_repo" = "yes" ] || [ "$has_repo" = "y" ]|| [ "$has_repo" = "Yes" ] || [ "$has_repo" = "Y" ]; then
 
-      # List all task definition families
-        ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
+        # List all task definition families
+         ecr_repositories_list=$(aws ecr describe-repositories --region $region --query 'repositories[*].repositoryName | sort(@)' --output text)
 
 
         # Get the latest version of each task definition family
@@ -199,18 +200,26 @@ echo ""
         fi
 
         # Get selected task definition
-        repo_name="${ecr_repositories[$((selection-1))]}"  
+        repo_name="${ecr_repositories[$((selection-1))]}" 
+        break 
 
-  else
-      repo_name="falcon-sensor/falcon-container"
-      echo "Checking if repository $repo_name exists..."
-      if check_repository_exists "$repo_name"; then
-          echo "Repository $repo_name already exists."
-      else
-          echo "Creating repository $repo_name..."
-          create_repository "$repo_name"
-      fi
-  fi
+    elif [ "$has_repo" = "no" ] || [ "$has_repo" = "n" ]|| [ "$has_repo" = "No" ] || [ "$has_repo" = "N" ]; then
+        repo_name="crowdstrike"
+        echo "Checking if repository $repo_name exists..."
+        if check_repository_exists "$repo_name"; then
+            echo "Repository $repo_name already exists."
+        else
+            echo "Creating repository $repo_name..."
+            create_repository "$repo_name"
+        fi
+        break
+    else
+        echo "Invalid input. Please answer 'yes' or 'no'."
+        read -p "Do you have an existing AWS ECR repository for Falcon Container Sensor (yes/no)? " has_repo
+    fi
+  done
+
+
 
   # Set falcon repository as a variable
   export AWS_REPO=$(aws ecr describe-repositories --repository-name $repo_name --region $region | jq -r  '.repositories[].repositoryUri' | tail -1)
