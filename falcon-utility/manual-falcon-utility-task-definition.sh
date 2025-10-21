@@ -4,7 +4,6 @@
 usage() {
     echo "Usage: $0 -r <region> -u <falcon-client-id> -s <falcon-client-secret> -p <app_arch>"
     echo "  -r: AWS region (required)"
-    echo "  -c: AWS ECS cluster name (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
     echo "  -s: CrowdStrike falcon client secret (required)"
     echo "  -p: AWS ECS Service/Task Architecture. i.e aarch64 or x86_64 (required)"
