@@ -139,7 +139,7 @@ echo ""
     elif [ "$architecture" == "X86_64" ]; then
         app_arch="x86_64"
     else
-        echo "Architecture not specified or unknown"
+        app_arch="x86_64"
     fi
 
     echo ""
