@@ -246,8 +246,19 @@ echo ""
     for image in $images; do
         echo "Pulling image $image locally to start the patching process"
         pull_image=$(docker pull $image)
-        IMAGE_REPO=$(echo $image | cut -d':' -f 1 )
-        IMAGE_TAG=$(echo $image | cut -d':' -f 2 )
+        if [[ $image == *"@sha256:"* ]]; then
+        # Handle @sha256 case
+            IMAGE_REPO=$(echo $image | cut -d'@' -f1)
+            IMAGE_TAG=$(echo $image | cut -d'@' -f2)
+
+        elif [[ $image == *":"* ]]; then
+            # Handle :tag case
+            IMAGE_REPO=$(echo $image | cut -d':' -f1)
+            IMAGE_TAG=$(echo $image | cut -d':' -f 2 )
+        else
+            # If neither @ nor : is present, use the full string
+            IMAGE_REPO=$image
+        fi
         if [ "$ARCH" == "arm64" ]; then
             docker run --platform linux/amd64 --user 0:0 \
             -v ${HOME}/.docker/config.json:/root/.docker/config.json \
