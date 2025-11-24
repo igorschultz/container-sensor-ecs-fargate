@@ -2,11 +2,10 @@
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 -r <region> -u <falcon-client-id> -s <falcon-client-secret> -p <app_arch>"
+    echo "Usage: $0 -r <region> -u <falcon-client-id> -s <falcon-client-secret>"
     echo "  -r: AWS region (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
     echo "  -s: CrowdStrike falcon client secret (required)"
-    echo "  -p: AWS ECS Service/Task Architecture. i.e aarch64 or x86_64 (required)"
     exit 1
 }
 
@@ -79,19 +78,19 @@ set -e
 trap 'handle_error "An error occurred at line $LINENO"' ERR
 
 # Parse command line arguments
-while getopts ":r:u:s:p:" opt; do
+while getopts ":r:u:s:" opt; do
     case $opt in
         r) region="$OPTARG" ;;
         u) falcon_client_id="$OPTARG" ;;
         s) falcon_client_secret="$OPTARG" ;;
-        p) app_arch="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2; usage ;;
     esac
 done
 
 # Initialize variables
 region="$region"
-app_arch="$app_arch"
+app_arch=""
+falcon_tag=""
 
 # Main code
 {
@@ -132,6 +131,16 @@ app_arch="$app_arch"
 
     ORIGINAL_TASK_DEFINITION=$task_def_name/${task_def_name}.json
 
+    # Identify container image architecture
+    architecture=$(aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition.runtimePlatform.cpuArchitecture' --output text)
+    if [ "$architecture" == "ARM64" ]; then
+        app_arch="aarch64"
+    elif [ "$architecture" == "X86_64" ]; then
+        app_arch="x86_64"
+    else
+        echo "Architecture not specified or unknown"
+    fi
+
     # Get task definition details and save to JSON file
     aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition ' --output json > "$ORIGINAL_TASK_DEFINITION"
 
@@ -147,12 +156,13 @@ app_arch="$app_arch"
     echo "Cleaned task definition and saved to $cleaned_file"
 
     # Variables
+    export FALCON_TAG=$falcon_tag
     export FALCON_CLIENT_ID=$falcon_client_id
     export FALCON_CLIENT_SECRET=$falcon_client_secret
     export FALCON_CID=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -t falcon-container --get-cid)
     export LATESTSENSOR=$(bash <(curl -Ls https://github.com/CrowdStrike/falcon-scripts/releases/latest/download/falcon-container-sensor-pull.sh) -p $app_arch -t falcon-container | tail -1)
     export FALCON_IMAGE_TAG=$(echo $LATESTSENSOR | cut -d':' -f 2)
-    export ACCOUNT_ID=$(aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition.taskDefinitionArn' --output text | awk -F: '{print $5}')
+    export ACCOUNT_ID=$(aws ecs describe-clusters --clusters $cluster_name --region $region --query 'clusters[0].clusterArn' --output text | awk -F: '{print $5}')
     export JSON_STRING=$(cat $cleaned_file)
 
     echo ""

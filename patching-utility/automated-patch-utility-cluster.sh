@@ -2,12 +2,11 @@
 
 # Function to display usage information
 usage() {
-    echo "Usage: $0 -c <cluster-name> -r <region> -u <falcon-client-id> -s <falcon-client-secret> -p <app_arch>"
+    echo "Usage: $0 -c <cluster-name> -r <region> -u <falcon-client-id> -s <falcon-client-secret>"
     echo "  -r: AWS region (required)"
     echo "  -c: AWS ECS cluster name (required)"
     echo "  -u: CrowdStrike falcon client ID (required)"
     echo "  -s: CrowdStrike falcon client secret (required)"
-    echo "  -p: AWS ECS Service/Task Architecture. i.e aarch64 or x86_64 (required)"
     exit 1
 }
 
@@ -82,13 +81,12 @@ set -e
 trap 'handle_error "An error occurred at line $LINENO"' ERR
 
 # Parse command line arguments
-while getopts ":r:c:u:s:p:" opt; do
+while getopts ":r:c:u:s:" opt; do
     case $opt in
         r) region="$OPTARG" ;;
         c) cluster_name="$OPTARG" ;;
         u) falcon_client_id="$OPTARG" ;;
         s) falcon_client_secret="$OPTARG" ;;
-        p) app_arch="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2; usage ;;
     esac
 done
@@ -96,7 +94,7 @@ done
 # Initialize variables
 region="$region"
 cluster_name="$cluster_name"
-app_arch="$app_arch"
+app_arch=""
 
 echo ""
 echo "Listing Fargate services in cluster: $cluster_name"
@@ -133,6 +131,16 @@ echo ""
 
     # Create output directory to store task definitions configurations
     mkdir -p "$OUTPUT_DIR" && cd $OUTPUT_DIR
+
+    # Identify container image architecture
+    architecture=$(aws ecs describe-task-definition --task-definition "$task_def_name" --region $region --query 'taskDefinition.runtimePlatform.cpuArchitecture' --output text)
+    if [ "$architecture" == "ARM64" ]; then
+        app_arch="aarch64"
+    elif [ "$architecture" == "X86_64" ]; then
+        app_arch="x86_64"
+    else
+        echo "Architecture not specified or unknown"
+    fi
 
     echo ""
     read -p "Do you have an existing AWS ECR repository for Falcon Container Sensor (yes/no)? " has_repo

@@ -54,39 +54,36 @@ The Falcon patching utility runs offline and takes task definition JSON as an in
 
 ```
 
-./manual-patch-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region> -p <platform>
+./manual-patch-utility-task-definition.sh -u <client-id> -s <client-secret> -r <aws-region>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
     -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
     -r, --region <AWS_REGION>                      Falcon Cloud Region [us-east-1, us-west-2, sa-east-1]
-    -p, --platform <SENSOR_PLATFORM>               Specify sensor platform to retrieve, e.g., x86_64, aarch64
 ```
 
 ### manual-patch-utility-service
 
 ```
 
-./manual-patch-utility-service.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name> -p <platform>
+./manual-patch-utility-service.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
     -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
     -r, --region <AWS_REGION>                      AWS Cloud Region [us-east-1, us-west-2, sa-east-1]
     -c, --cluster <CLUSTER_NAME>                   ECS Cluster name
-    -p, --platform <SENSOR_PLATFORM>               Specify sensor platform to retrieve, e.g., x86_64, aarch64
 ```
 
 ### automated-patch-utility-cluster
 
 ```
 
-./automated-patch-utility-cluster.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name> -p <platform>
+./automated-patch-utility-cluster.sh -u <client-id> -s <client-secret> -r <aws-region> -c <ecs-cluster-name>
 
 Required Flags:
     -u, --client-id <FALCON_CLIENT_ID>             Falcon API OAUTH Client ID
     -s, --client-secret <FALCON_CLIENT_SECRET>     Falcon API OAUTH Client Secret
     -r, --region <AWS_REGION>                      AWS Cloud Region [us-east-1, us-west-2, sa-east-1]
     -c, --cluster <CLUSTER_NAME>                   ECS Cluster name
-    -p, --platform <SENSOR_PLATFORM>               Specify sensor platform to retrieve, e.g., x86_64, aarch64
 ```
